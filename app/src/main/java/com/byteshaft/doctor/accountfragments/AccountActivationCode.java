@@ -61,6 +61,7 @@ public class AccountActivationCode extends Fragment implements View.OnClickListe
 //        mSignTextView.setOnClickListener(this);
         mResendTextView.setOnClickListener(this);
         mEmail.setText(AppGlobals.getStringFromSharedPreferences(AppGlobals.KEY_EMAIL));
+        mEmail.setEnabled(false);
         mEmailString = AppGlobals.getStringFromSharedPreferences(AppGlobals.KEY_EMAIL);
         return mBaseView;
     }
