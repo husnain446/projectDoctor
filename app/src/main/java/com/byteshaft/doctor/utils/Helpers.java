@@ -166,7 +166,7 @@ public class Helpers {
         ImageLoadingListener animateFirstListener;
         DisplayImageOptions options;
         options = new DisplayImageOptions.Builder()
-                .showImageOnLoading(R.drawable.progress_image)
+                .showImageOnLoading(R.mipmap.image_placeholder)
                 .imageScaleType(ImageScaleType.IN_SAMPLE_POWER_OF_2)
                 .cacheInMemory(true)
                 .cacheOnDisc(true).considerExifParams(true).build();

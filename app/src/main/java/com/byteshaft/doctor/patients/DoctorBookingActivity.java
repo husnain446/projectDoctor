@@ -1,10 +1,15 @@
 package com.byteshaft.doctor.patients;
 
+import android.Manifest;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.AppCompatButton;
 import android.util.Log;
@@ -21,6 +26,8 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.byteshaft.doctor.R;
+import com.byteshaft.doctor.messages.ConversationActivity;
+import com.byteshaft.doctor.utils.AppGlobals;
 import com.byteshaft.doctor.utils.Helpers;
 
 import org.json.JSONArray;
@@ -75,11 +82,11 @@ public class DoctorBookingActivity extends AppCompatActivity implements View.OnC
 //        mDoctorRating = (RatingBar) findViewById(R.id.doctor_rating_booking);
 //        mtime = (TextClock) findViewById(R.id.clock);
 //        mDoctorImage = (CircleImageView) findViewById(R.id.doctor_image_booking);
-//        mCallButton = (ImageButton) findViewById(R.id.call_button_booking);
-//        mChatButton = (ImageButton) findViewById(R.id.chat_button_booking);
+        mCallButton = (ImageButton) findViewById(R.id.call_button);
+        mChatButton = (ImageButton) findViewById(R.id.message_button);
 //        mFavButton = (ImageButton) findViewById(R.id.button_fav_booking);
-//        mCallButton.setOnClickListener(this);
-//        mChatButton.setOnClickListener(this);
+        mCallButton.setOnClickListener(this);
+        mChatButton.setOnClickListener(this);
 //        mFavButton.setOnClickListener(this);
         JSONArray jsonArray = new JSONArray();
         try {
@@ -135,17 +142,49 @@ public class DoctorBookingActivity extends AppCompatActivity implements View.OnC
 
     @Override
     public void onClick(View view) {
-//        switch (view.getId()) {
-//            case R.id.call_button_booking:
-//                // TODO: 07/03/2017 call intent
-//                break;
-//            case R.id.chat_button_booking:
-//                // TODO: 07/03/2017 open chat activity
-//                break;
-//            case R.id.button_fav_booking:
-//                mFavButton.setBackgroundResource(R.mipmap.ic_heart_fill);
-//                break;
-//        }
+        switch (view.getId()) {
+            case R.id.call_button:
+                if (ContextCompat.checkSelfPermission(this,
+                        Manifest.permission.CALL_PHONE)
+                        != PackageManager.PERMISSION_GRANTED) {
+                    ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.CALL_PHONE},
+                            AppGlobals.CALL_PERMISSION);
+                } else {
+                    Intent intent = new Intent(Intent.ACTION_CALL, Uri.parse("tel:" + "03120676767"));
+                    startActivity(intent);
+                }
+                break;
+            case R.id.message_button:
+                startActivity(new Intent(getApplicationContext(),
+                        ConversationActivity.class));
+                break;
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        switch (requestCode) {
+            case AppGlobals.CALL_PERMISSION:
+                if (grantResults.length > 0
+                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    Intent intent = new Intent(Intent.ACTION_CALL, Uri.parse("tel:" + "03120676767"));
+                    if (ActivityCompat.checkSelfPermission(this, Manifest.permission.CALL_PHONE) != PackageManager.PERMISSION_GRANTED) {
+                        // TODO: Consider calling
+                        //    ActivityCompat#requestPermissions
+                        // here to request the missing permissions, and then overriding
+                        //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+                        //                                          int[] grantResults)
+                        // to handle the case where the user grants the permission. See the documentation
+                        // for ActivityCompat#requestPermissions for more details.
+                        return;
+                    }
+                    startActivity(intent);
+                } else {
+                    Helpers.showSnackBar(findViewById(android.R.id.content), R.string.permission_denied);
+                }
+                break;
+        }
     }
 
     private class TimeTableAdapter extends ArrayAdapter<JSONArray> {

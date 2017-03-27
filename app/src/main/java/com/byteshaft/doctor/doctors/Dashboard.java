@@ -14,6 +14,10 @@ import android.widget.TextView;
 
 import com.byteshaft.doctor.R;
 import com.byteshaft.doctor.utils.AppGlobals;
+import com.github.mikephil.charting.charts.BarChart;
+import com.github.mikephil.charting.data.BarData;
+import com.github.mikephil.charting.data.BarDataSet;
+import com.github.mikephil.charting.data.BarEntry;
 
 import java.util.ArrayList;
 
@@ -28,6 +32,7 @@ public class Dashboard extends Fragment {
     private TextView doctorEmail;
     private TextView doctorSp;
     private CircleImageView doctorImage;
+    private BarChart mChart;
     private RecyclerView list;
 
     @Override
@@ -40,11 +45,43 @@ public class Dashboard extends Fragment {
         doctorEmail = (TextView) mBaseView.findViewById(R.id.doctor_email);
         doctorSp = (TextView) mBaseView.findViewById(R.id.doctor_sp);
         doctorImage = (CircleImageView) mBaseView.findViewById(R.id.doctor_image);
+        list = (RecyclerView) mBaseView.findViewById(R.id.dashboard_list);
+        mChart = (BarChart) mBaseView.findViewById(R.id.chart);
+
+        ArrayList<BarEntry> list = new ArrayList<>();
+        list.add(new BarEntry(1, 2));
+        list.add(new BarEntry(3, 4));
+        list.add(new BarEntry(4, 12));
+        list.add(new BarEntry(10, 8));
+
+        ArrayList<BarEntry> rejectedList = new ArrayList<>();
+        list.add(new BarEntry(10, 12));
+        list.add(new BarEntry(13, 14));
+        list.add(new BarEntry(41, 12));
+        list.add(new BarEntry(11, 18));
+
+        BarDataSet income = new BarDataSet(list, "income");
+        BarDataSet rejected = new BarDataSet(rejectedList, "rejected");
+        BarDataSet accepted = new BarDataSet(list, "accepted");
+
+        income.setColor(R.color.buttonColor);
+        rejected.setColor(R.color.colorAccent);
+        accepted.setColor(R.color.common_google_signin_btn_text_dark);
+
+        ArrayList<String> date = new ArrayList<>();
+        date.add("January");
+        date.add("January");
+        date.add("Feb");
+        date.add("January");
+        date.add("January");
+        date.add("January");
+
+        BarData data = new BarData(income, rejected, accepted);
+        mChart.setData(data);
 
         doctorName.setTypeface(AppGlobals.typefaceNormal);
         doctorEmail.setTypeface(AppGlobals.typefaceNormal);
         doctorSp.setTypeface(AppGlobals.typefaceNormal);
-        list = (RecyclerView) mBaseView.findViewById(R.id.dashboard_list);
         doctorName.setText(AppGlobals.getStringFromSharedPreferences(AppGlobals.KEY_FIRST_NAME)
                 + " " + AppGlobals.getStringFromSharedPreferences(AppGlobals.KEY_LAST_NAME));
         doctorEmail.setText(AppGlobals.getStringFromSharedPreferences(AppGlobals.KEY_EMAIL));

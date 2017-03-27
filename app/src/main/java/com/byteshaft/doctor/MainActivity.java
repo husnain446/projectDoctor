@@ -186,7 +186,7 @@ public class MainActivity extends AppCompatActivity
                 android.Manifest.permission.WRITE_EXTERNAL_STORAGE)
                 != PackageManager.PERMISSION_GRANTED) {
             AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this, R.style.MyAlertDialogTheme);
-            alertDialogBuilder.setTitle(getResources().getString(R.string.permission_dialog_title));
+            alertDialogBuilder.setTitle(getResources().getString(R.string.storage_permission_dialog_title));
             alertDialogBuilder.setMessage(getResources().getString(R.string.storage_permission_message))
                     .setCancelable(false).setPositiveButton("Continue", new DialogInterface.OnClickListener() {
                 public void onClick(DialogInterface dialog, int id) {

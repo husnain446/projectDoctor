@@ -1,13 +1,17 @@
 package com.byteshaft.doctor.doctors;
 
+import android.Manifest;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.content.res.Resources;
 import android.content.res.TypedArray;
 import android.graphics.Color;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.Toolbar;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -31,7 +35,10 @@ import android.widget.ListView;
 import android.widget.TextView;
 
 import com.byteshaft.doctor.R;
+import com.byteshaft.doctor.messages.ConversationActivity;
 import com.byteshaft.doctor.patients.PatientDetails;
+import com.byteshaft.doctor.utils.AppGlobals;
+import com.byteshaft.doctor.utils.Helpers;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
@@ -223,14 +230,49 @@ public class MyPatients extends Fragment {
             viewHolder.name.setText(doctorsList.get(position)[0]);
             viewHolder.patientAge.setText(" - ("+doctorsList.get(position)[1]+"a)");
             viewHolder.distance.setText(" "+doctorsList.get(position)[2]+" km");
+            viewHolder.chat.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    startActivity(new Intent(getActivity().getApplicationContext(),
+                            ConversationActivity.class));
+                }
+            });
+            viewHolder.call.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    if (ContextCompat.checkSelfPermission(getActivity(),
+                            Manifest.permission.CALL_PHONE)
+                            != PackageManager.PERMISSION_GRANTED) {
+                        requestPermissions(new String[]{Manifest.permission.CALL_PHONE},
+                                AppGlobals.CALL_PERMISSION);
+                    } else {
+                        Intent intent = new Intent(Intent.ACTION_CALL, Uri.parse("tel:" + "03120676767"));
+                        startActivity(intent);
+                    }
+                }
+            });
             return convertView;
         }
-
-
 
         @Override
         public int getCount() {
             return doctorsList.size();
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        switch (requestCode) {
+            case AppGlobals.CALL_PERMISSION:
+                if (grantResults.length > 0
+                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    Intent intent = new Intent(Intent.ACTION_CALL, Uri.parse("tel:" + "03120676767"));
+                    startActivity(intent);
+                } else {
+                    Helpers.showSnackBar(getView(), R.string.permission_denied);
+                }
+                break;
         }
     }
 
@@ -243,6 +285,7 @@ public class MyPatients extends Fragment {
         ImageButton call;
         ImageButton openDetailButton;
         ImageView status;
+
 
     }
 }

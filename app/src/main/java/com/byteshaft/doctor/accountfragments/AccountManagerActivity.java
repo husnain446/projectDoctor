@@ -68,7 +68,6 @@ public class AccountManagerActivity extends AppCompatActivity {
 
         } else {
             Log.i("TAG", "count " + getSupportFragmentManager().getBackStackEntryCount());
-
             if (getSupportFragmentManager().getBackStackEntryCount() > 0) {
                 getFragmentManager().popBackStack();
                 Log.i("TAG", "count again" + getSupportFragmentManager().getBackStackEntryCount());

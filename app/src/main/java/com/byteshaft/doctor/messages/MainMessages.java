@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v7.app.AppCompatActivity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -34,6 +35,8 @@ public class MainMessages extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         mBaseView = inflater.inflate(R.layout.activity_main_messages, container, false);
+        ((AppCompatActivity) getActivity()).getSupportActionBar()
+                .setTitle(getResources().getString(R.string.messages));
         mMessagesList = (ListView) mBaseView.findViewById(R.id.main_messages);
         mainMessages = new ArrayList<>();
         mainMessages.add(new String[]{AppGlobals.getStringFromSharedPreferences(AppGlobals.SERVER_PHOTO_URL),

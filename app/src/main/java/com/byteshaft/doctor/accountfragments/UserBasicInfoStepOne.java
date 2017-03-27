@@ -147,7 +147,7 @@ public class UserBasicInfoStepOne extends Fragment implements DatePickerDialog.O
             mGenderButtonSting = gender;
         }
 
-        if (AppGlobals.isLogin() && AppGlobals.getStringFromSharedPreferences(AppGlobals.SERVER_PHOTO_URL) != null) {
+        if (AppGlobals.isLogin() && AppGlobals.isInfoAvailable() && AppGlobals.getStringFromSharedPreferences(AppGlobals.SERVER_PHOTO_URL) != null) {
             String url = String.format("%s" + AppGlobals
                     .getStringFromSharedPreferences(AppGlobals.SERVER_PHOTO_URL), AppGlobals.SERVER_IP);
             getBitMap(url, mProfilePicture);

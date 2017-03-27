@@ -115,5 +115,6 @@
     <string name="updating">Setting up profile</string>
     <string name="appointments">Appointments</string>
     <string name="my_patient_details">My Patient Details</string>
+    <string name="messages">Messages</string>
 
 </resources>
