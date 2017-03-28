@@ -36,9 +36,6 @@ import java.net.HttpURLConnection;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Created by husnain on 2/20/17.
- */
 
 public class UserBasicInfoStepTwo extends Fragment implements AdapterView.OnItemSelectedListener,
         View.OnClickListener, CompoundButton.OnCheckedChangeListener, HttpRequest.OnReadyStateChangeListener,
@@ -397,8 +394,8 @@ public class UserBasicInfoStepTwo extends Fragment implements AdapterView.OnItem
 
     @Override
     public void onFileUploadProgress(HttpRequest request, File file, long loaded, long total) {
-        double progress = (loaded/(double)total) *100;
-        Log.i("current progress", "" +(int) progress);
+        double progress = (loaded / (double) total) * 100;
+        Log.i("current progress", "" + (int) progress);
         donutProgress.setProgress((int) progress);
 
 
