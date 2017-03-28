@@ -23,6 +23,10 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.net.HttpURLConnection;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
 
 import static android.R.attr.accountType;
 
@@ -154,7 +158,7 @@ public class Login extends Fragment implements View.OnClickListener, HttpRequest
                             }
                         } catch (JSONException e) {
                             e.printStackTrace();
-                    }
+                        }
 
                         break;
 

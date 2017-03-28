@@ -28,6 +28,13 @@ import android.widget.ListView;
 import android.widget.TextView;
 
 import com.byteshaft.doctor.R;
+import com.byteshaft.doctor.utils.AppGlobals;
+import com.byteshaft.doctor.utils.Helpers;
+import com.byteshaft.requests.HttpRequest;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
@@ -36,12 +43,16 @@ import java.util.ArrayList;
  * Created by s9iper1 on 3/23/17.
  */
 
-public class MySchedule extends Fragment {
+public class MySchedule extends Fragment implements HttpRequest.OnReadyStateChangeListener,
+        HttpRequest.OnErrorListener{
 
     private View mBaseView;
     private ListView mListView;
     private ArrayList<String[]> scheduleList;
     private LinearLayout searchContainer;
+
+    private HttpRequest request;
+
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -154,6 +165,39 @@ public class MySchedule extends Fragment {
             default:
                 return false;
         }
+    }
+
+    @Override
+    public void onError(HttpRequest request, int readyState, short error, Exception exception) {
+
+    }
+
+    @Override
+    public void onReadyStateChange(HttpRequest request, int readyState) {
+
+    }
+
+    private void doctorsSchedule(String date, JSONArray items) {
+        Helpers.showProgressDialog(getActivity(), "Activating User");
+        request = new HttpRequest(getActivity());
+        request.setOnReadyStateChangeListener(this);
+        request.setOnErrorListener(this);
+        request.open("POST", String.format("%sdoctor/schedule", AppGlobals.BASE_URL));
+        request.setRequestHeader("Authorization", "Token " +
+                AppGlobals.getStringFromSharedPreferences(AppGlobals.KEY_TOKEN));
+        request.send(getDoctorsScheduleData(date, items));
+    }
+
+
+    private String getDoctorsScheduleData(String date, JSONArray items) {
+        JSONObject jsonObject = new JSONObject();
+        try {
+            jsonObject.put("date", date);
+            jsonObject.put("items", items);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        return jsonObject.toString();
     }
 
     private class ScheduleAdapter extends ArrayAdapter<String> {
