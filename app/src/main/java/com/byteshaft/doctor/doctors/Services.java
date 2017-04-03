@@ -183,7 +183,7 @@ public class Services extends Fragment {
             viewHolder.servicePrice.setText(data.get(position)[1]);
             if (Integer.valueOf(data.get(position)[2]) == 0) {
                 viewHolder.serviceStatus.setChecked(false);
-            } else if (Integer.valueOf(data.get(position)[2]) == 2){
+            } else if (Integer.valueOf(data.get(position)[2]) == 2) {
                 viewHolder.serviceStatus.setVisibility(View.GONE);
                 viewHolder.addService.setVisibility(View.VISIBLE);
                 viewHolder.removeService.setVisibility(View.GONE);

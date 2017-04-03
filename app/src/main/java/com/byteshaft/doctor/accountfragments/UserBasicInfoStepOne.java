@@ -91,7 +91,7 @@ public class UserBasicInfoStepOne extends Fragment implements DatePickerDialog.O
     private String mFirstNameString;
     private String mLastNameString;
     private String mDateOfBirthString;
-    private String mGenderButtonSting;
+    private String mGenderButtonString;
     private String mAddressString;
     private String mLocationString;
 
@@ -139,12 +139,12 @@ public class UserBasicInfoStepOne extends Fragment implements DatePickerDialog.O
         mAddress.setText(AppGlobals.getStringFromSharedPreferences(AppGlobals.KEY_ADDRESS));
         String gender = AppGlobals.getStringFromSharedPreferences(AppGlobals.KEY_GENDER);
 
-        if (gender.contains("Male")) {
+        if (gender.contains("M")) {
             mRadioGroup.check(R.id.radio_button_male);
-            mGenderButtonSting = gender;
+            mGenderButtonString = gender;
         } else {
             mRadioGroup.check(R.id.radio_button_female);
-            mGenderButtonSting = gender;
+            mGenderButtonString = gender;
         }
 
         if (AppGlobals.isLogin() && AppGlobals.isInfoAvailable() && AppGlobals.getStringFromSharedPreferences(AppGlobals.SERVER_PHOTO_URL) != null) {
@@ -201,7 +201,7 @@ public class UserBasicInfoStepOne extends Fragment implements DatePickerDialog.O
                 }
                 break;
             case R.id.next_button:
-                if (validateEditText() && mGenderButtonSting != null && !mGenderButtonSting.isEmpty()) {
+                if (validateEditText() && mGenderButtonString != null && !mGenderButtonString.isEmpty()) {
                     if (mLocationString == null) {
                         mLocationString = getLocationFromAddress(AppGlobals.getContext(),
                                 mAddressString).toString();
@@ -211,7 +211,7 @@ public class UserBasicInfoStepOne extends Fragment implements DatePickerDialog.O
                     AppGlobals.saveDataToSharedPreferences(AppGlobals.KEY_FIRST_NAME, mFirstNameString);
                     AppGlobals.saveDataToSharedPreferences(AppGlobals.KEY_LAST_NAME, mLastNameString);
                     AppGlobals.saveDataToSharedPreferences(AppGlobals.KEY_DATE_OF_BIRTH, mDateOfBirthString);
-                    AppGlobals.saveDataToSharedPreferences(AppGlobals.KEY_GENDER, mGenderButtonSting);
+                    AppGlobals.saveDataToSharedPreferences(AppGlobals.KEY_GENDER, mGenderButtonString);
                     AppGlobals.saveDataToSharedPreferences(AppGlobals.KEY_ADDRESS, mAddressString);
                     AppGlobals.saveDataToSharedPreferences(AppGlobals.KEY_LOCATION, mLocationString);
                     if (!imageUrl.trim().isEmpty()) {
@@ -302,7 +302,13 @@ public class UserBasicInfoStepOne extends Fragment implements DatePickerDialog.O
     @Override
     public void onCheckedChanged(RadioGroup radioGroup, int checkedId) {
         genderButton = (RadioButton) mBaseView.findViewById(checkedId);
-        mGenderButtonSting = genderButton.getText().toString();
+        if (genderButton.getText().toString().contains("Male")) {
+            mGenderButtonString = "M";
+            System.out.println(mGenderButtonString);
+        } else {
+            mGenderButtonString = "F";
+            System.out.println(mGenderButtonString);
+        }
     }
 
     private boolean validateEditText() {
@@ -337,7 +343,7 @@ public class UserBasicInfoStepOne extends Fragment implements DatePickerDialog.O
         } else {
             mDateOfBirth.setError(null);
         }
-        if (mGenderButtonSting == null) {
+        if (mGenderButtonString == null) {
             Helpers.showSnackBar(getView(), R.string.choose_your_gender);
             valid = false;
         }

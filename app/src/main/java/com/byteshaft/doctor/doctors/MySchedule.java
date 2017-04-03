@@ -10,6 +10,7 @@ import android.support.v4.app.Fragment;
 import android.support.v7.widget.Toolbar;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -22,6 +23,7 @@ import android.view.ViewGroup;
 import android.view.inputmethod.EditorInfo;
 import android.widget.ArrayAdapter;
 import android.widget.CheckBox;
+import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.ListView;
@@ -37,7 +39,12 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.lang.reflect.Field;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Created by s9iper1 on 3/23/17.
@@ -48,8 +55,11 @@ public class MySchedule extends Fragment implements HttpRequest.OnReadyStateChan
 
     private View mBaseView;
     private ListView mListView;
-    private ArrayList<String[]> scheduleList;
+    private ArrayList<JSONObject> scheduleList;
     private LinearLayout searchContainer;
+    private String currentDate;
+    private static final long HALFANHOUR = 1800000;
+    private ArrayList<String> initialTimeSLots;
 
     private HttpRequest request;
 
@@ -59,6 +69,7 @@ public class MySchedule extends Fragment implements HttpRequest.OnReadyStateChan
         mBaseView = inflater.inflate(R.layout.my_schedule, container, false);
         setHasOptionsMenu(true);
         searchContainer = new LinearLayout(getActivity());
+        initialTimeSLots = new ArrayList<>();
         Toolbar toolbar = (Toolbar) getActivity().findViewById(R.id.toolbar);
         Toolbar.LayoutParams containerParams = new Toolbar.LayoutParams
                 (ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
@@ -136,18 +147,72 @@ public class MySchedule extends Fragment implements HttpRequest.OnReadyStateChan
         // Add search view to toolbar and hide it
         toolbar.addView(searchContainer);
         scheduleList = new ArrayList<>();
-        scheduleList.add(new String[]{"10:00", "10:30", "1"});
-        scheduleList.add(new String[]{"11100", "11:30", "0"});
-        scheduleList.add(new String[]{"12:00", "12:30", "1"});
-        scheduleList.add(new String[]{"13:00", "13:30", "0"});
-        scheduleList.add(new String[]{"14:00", "14:30", "1"});
-        scheduleList.add(new String[]{"15:00", "15:30", "0"});
-        scheduleList.add(new String[]{"16:00", "16:30", "0"});
-        scheduleList.add(new String[]{"17:00", "17:30", "1"});
-        scheduleList.add(new String[]{"18:00", "18:30", "0"});
+
+        currentDate = Helpers.getTime();
+        getTimeSlotsForDate(currentDate, TimeUnit.MINUTES.toMillis(45));
+        return mBaseView;
+    }
+
+    private void getTimeSlotsForDate(String targetDate, long duration) {
+        String time1 = "08:00";
+        String time2 = "22:31";
+
+        String format = "dd/MM/yyyy hh:mm";
+
+        Log.i("TAG", "" + targetDate);
+        Log.i("TAG", "" + targetDate);
+
+        SimpleDateFormat sdf = new SimpleDateFormat(format);
+
+        Date dateObj1 = null;
+        Date dateObj2 = null;
+        try {
+            dateObj1 = sdf.parse(targetDate + " " + time1);
+            dateObj2 = sdf.parse(targetDate + " " + time2);
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+        System.out.println("Date Start: "+dateObj1);
+        System.out.println("Date End: "+dateObj2);
+
+        long dif = dateObj1.getTime();
+        while (dif < dateObj2.getTime()) {
+            Date slot = new Date(dif);
+//            System.out.println("Hour Slot --->" + slot);
+            DateFormat df = new SimpleDateFormat("HH:mm");
+            String date = df.format(slot.getTime());
+//            System.out.println("Time --->" + date);
+            initialTimeSLots.add(date);
+            dif += duration;
+        }
+
+        for (int i = 0; i < initialTimeSLots.size(); i++) {
+            StringBuilder time = new StringBuilder();
+            if (i+1 < initialTimeSLots.size()) {
+                time.append(initialTimeSLots.get(i));
+            }
+            time.append(" , ");
+            if (i+1 < initialTimeSLots.size()) {
+                time.append(initialTimeSLots.get(i+1));
+            }
+
+            if (!time.toString().trim().isEmpty()) {
+                String[] bothTimes = time.toString().split(",");
+                JSONObject jsonObject = new JSONObject();
+                try {
+                    jsonObject.put("start_time", bothTimes[0]);
+                    jsonObject.put("end_time", bothTimes[1]);
+                    jsonObject.put("state", 0);
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+                if (!bothTimes[0].trim().isEmpty()) {
+                    scheduleList.add(jsonObject);
+                }
+            }
+        }
         mListView = (ListView) mBaseView.findViewById(R.id.schedule_list);
         mListView.setAdapter(new ScheduleAdapter(getActivity().getApplicationContext(), scheduleList));
-        return mBaseView;
     }
 
     @Override
@@ -202,16 +267,16 @@ public class MySchedule extends Fragment implements HttpRequest.OnReadyStateChan
 
     private class ScheduleAdapter extends ArrayAdapter<String> {
 
-        private ArrayList<String[]> scheduleList;
+        private ArrayList<JSONObject> scheduleList;
         private ViewHolder viewHolder;
 
-        public ScheduleAdapter(@NonNull Context context, ArrayList<String[]> scheduleList) {
+        public ScheduleAdapter(@NonNull Context context, ArrayList<JSONObject> scheduleList) {
             super(context, R.layout.delegate_doctor_schedule);
             this.scheduleList = scheduleList;
         }
 
         @Override
-        public View getView(int position, android.view.View convertView, ViewGroup parent) {
+        public View getView(final int position, android.view.View convertView, ViewGroup parent) {
             if (convertView == null) {
                 convertView = getActivity().getLayoutInflater()
                         .inflate(R.layout.delegate_doctor_schedule, parent, false);
@@ -223,12 +288,46 @@ public class MySchedule extends Fragment implements HttpRequest.OnReadyStateChan
             } else {
                 viewHolder = (ViewHolder) convertView.getTag();
             }
-            viewHolder.startTime.setText(scheduleList.get(position)[0]);
-            viewHolder.endTime.setText(scheduleList.get(position)[1]);
-            if (Integer.valueOf(scheduleList.get(position)[2]) == 0) {
-                viewHolder.state.setChecked(false);
-            } else {
-                viewHolder.state.setChecked(true);
+            try {
+                viewHolder.startTime.setText(scheduleList.get(position).getString("start_time"));
+                viewHolder.endTime.setText(scheduleList.get(position).getString("end_time"));
+                if (scheduleList.get(position).getInt("state") == 0) {
+                    viewHolder.state.setChecked(false);
+                } else {
+                    viewHolder.state.setChecked(true);
+                }
+                viewHolder.state.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+                    @Override
+                    public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
+                        Log.i("TAG", "oncheckedChanged");
+                        Log.d("TAG", "onCheckedChanged: " + viewHolder.state.getText() + " " + (b ? "selected":"deselected"));
+                        switch (compoundButton.getId()) {
+                            case R.id.check_box_appointment:
+                                JSONObject jsonObject = scheduleList.get(position);
+                                if (b) {
+                                    try {
+                                        jsonObject.put("state", 1);
+                                    } catch (JSONException e) {
+                                        e.printStackTrace();
+                                    }
+                                } else {
+                                    try {
+                                        jsonObject.put("state", 0);
+                                    } catch (JSONException e) {
+                                        e.printStackTrace();
+                                    }
+                                }
+                                Log.i("TAG", jsonObject.toString());
+                                Log.i("TAG", "position " + position);
+                                scheduleList.remove(position);
+                                scheduleList.add(position, jsonObject);
+                                Log.i("TAG", "List " + scheduleList);
+                                break;
+                        }
+                    }
+                });
+            } catch (JSONException e) {
+                e.printStackTrace();
             }
             return convertView;
         }

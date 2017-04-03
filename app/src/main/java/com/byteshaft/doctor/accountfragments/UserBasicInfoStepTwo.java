@@ -11,7 +11,6 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
@@ -22,19 +21,25 @@ import android.widget.Toast;
 
 import com.byteshaft.doctor.MainActivity;
 import com.byteshaft.doctor.R;
+import com.byteshaft.doctor.adapters.CitiesAdapter;
+import com.byteshaft.doctor.adapters.InsuranceCarriersAdapter;
+import com.byteshaft.doctor.adapters.StatesAdapter;
+import com.byteshaft.doctor.gettersetter.Cities;
+import com.byteshaft.doctor.gettersetter.InsuranceCarriers;
+import com.byteshaft.doctor.gettersetter.States;
 import com.byteshaft.doctor.utils.AppGlobals;
 import com.byteshaft.doctor.utils.Helpers;
 import com.byteshaft.requests.FormData;
 import com.byteshaft.requests.HttpRequest;
 import com.github.lzyzsd.circleprogress.DonutProgress;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.File;
 import java.net.HttpURLConnection;
 import java.util.ArrayList;
-import java.util.List;
 
 
 public class UserBasicInfoStepTwo extends Fragment implements AdapterView.OnItemSelectedListener,
@@ -44,7 +49,6 @@ public class UserBasicInfoStepTwo extends Fragment implements AdapterView.OnItem
     private Spinner mStateSpinner;
     private Spinner mCitySpinner;
     private Spinner mInsuranceCarrierSpinner;
-//    private Spinner mAffiliatedClinicsSpinner;
     private TextView mStateSpinnerTextView;
     private EditText mPhoneOneEditText;
     private EditText mPhoneTwoEditText;
@@ -57,7 +61,6 @@ public class UserBasicInfoStepTwo extends Fragment implements AdapterView.OnItem
     private String mEmergencyContactString;
     private String mStatesSpinnerValueString;
     private String mCitiesSpinnerValueString;
-    private String mAffiliatedClinicsSpinnerValueString;
     private String mInsuranceCarrierSpinnerValueString;
     private String mNotificationCheckBoxString = "true";
     private String mNewsCheckBoxString = "true";
@@ -67,16 +70,32 @@ public class UserBasicInfoStepTwo extends Fragment implements AdapterView.OnItem
     private DonutProgress donutProgress;
     private AlertDialog alertDialog;
 
+
+    private ArrayList<States> statesList;
+    private StatesAdapter statesAdapter;
+    private ArrayList<Cities> citiesList;
+    private CitiesAdapter citiesAdapter;
+
+    private ArrayList<InsuranceCarriers> insuranceCarriersesList;
+    private InsuranceCarriersAdapter insuranceCarriersAdapter;
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         mBaseView = inflater.inflate(R.layout.fragment_user_basic_info_step_two, container, false);
         ((AppCompatActivity) getActivity()).getSupportActionBar()
                 .setTitle(getResources().getString(R.string.sign_up));
         setHasOptionsMenu(true);
+
+        getStates();
+        getInsuranceCarriers();
+        /// data list work
+        statesList = new ArrayList<>();
+        citiesList = new ArrayList<>();
+        insuranceCarriersesList = new ArrayList<>();
+
         mStateSpinner = (Spinner) mBaseView.findViewById(R.id.states_spinner);
         mCitySpinner = (Spinner) mBaseView.findViewById(R.id.cities_spinner);
         mInsuranceCarrierSpinner = (Spinner) mBaseView.findViewById(R.id.insurance_spinner);
-//        mAffiliatedClinicsSpinner = (Spinner) mBaseView.findViewById(R.id.clinic_spinner);
         mStateSpinnerTextView = (TextView) mBaseView.findViewById(R.id.states_spinner_text_view);
 
         mPhoneOneEditText = (EditText) mBaseView.findViewById(R.id.phone_one_edit_text);
@@ -100,53 +119,8 @@ public class UserBasicInfoStepTwo extends Fragment implements AdapterView.OnItem
         mNewsCheckBox.setTypeface(AppGlobals.typefaceNormal);
         mTermsConditionCheckBox.setTypeface(AppGlobals.typefaceNormal);
 
-        List<String> StateList = new ArrayList<>();
-        StateList.add("State1");
-        StateList.add("State2");
-        StateList.add("State3");
-        StateList.add("State4");
-        StateList.add("State5");
-        ArrayAdapter<String> StateListAdapter = new ArrayAdapter<>(getActivity(),
-                android.R.layout.simple_list_item_1, StateList);
-        StateListAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        mStateSpinner.setAdapter(StateListAdapter);
-
-        List<String> citiesList = new ArrayList<String>();
-        citiesList.add("city1");
-        citiesList.add("city2");
-        citiesList.add("city3");
-        citiesList.add("city4");
-        citiesList.add("city5");
-        ArrayAdapter<String> CitiesListAdapter = new ArrayAdapter<>(getActivity(),
-                android.R.layout.simple_list_item_1, citiesList);
-        CitiesListAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        mCitySpinner.setAdapter(CitiesListAdapter);
-
-        List<String> InsuranceCarrierList = new ArrayList<>();
-        InsuranceCarrierList.add("Insurance Carrier-1");
-        InsuranceCarrierList.add("Insurance Carrier-2");
-        InsuranceCarrierList.add("Insurance Carrier-3");
-        InsuranceCarrierList.add("Insurance Carrier-4");
-        ArrayAdapter<String> InsuranceCarrierListAdapter = new ArrayAdapter<>(getActivity(),
-                android.R.layout.simple_list_item_1, InsuranceCarrierList);
-        InsuranceCarrierListAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        mInsuranceCarrierSpinner.setAdapter(InsuranceCarrierListAdapter);
-
-
-//        List<String> clinicList = new ArrayList<>();
-//        clinicList.add("Doctor dray clinic");
-//        clinicList.add("Cantt clinic");
-//        clinicList.add("City hospital");
-//        clinicList.add("Medicare");
-//        clinicList.add("Patient care");
-//        ArrayAdapter<String> clinicListAdapter = new ArrayAdapter<>(getActivity(),
-//                android.R.layout.simple_list_item_1, clinicList);
-//        clinicListAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-//        mAffiliatedClinicsSpinner.setAdapter(clinicListAdapter);
-
         mStateSpinner.setOnItemSelectedListener(this);
         mCitySpinner.setOnItemSelectedListener(this);
-//        mAffiliatedClinicsSpinner.setOnItemSelectedListener(this);
         mInsuranceCarrierSpinner.setOnItemSelectedListener(this);
 
         mNotificationCheckBox.setOnCheckedChangeListener(this);
@@ -156,6 +130,110 @@ public class UserBasicInfoStepTwo extends Fragment implements AdapterView.OnItem
         mSaveButton.setOnClickListener(this);
 
         return mBaseView;
+    }
+
+    private void getInsuranceCarriers() {
+        HttpRequest getStateRequest = new HttpRequest(getActivity().getApplicationContext());
+        getStateRequest.setOnReadyStateChangeListener(new HttpRequest.OnReadyStateChangeListener() {
+            @Override
+            public void onReadyStateChange(HttpRequest request, int readyState) {
+                switch (readyState) {
+                    case HttpRequest.STATE_DONE:
+                        switch (request.getStatus()) {
+                            case HttpURLConnection.HTTP_OK:
+                                try {
+                                    JSONObject object = new JSONObject(request.getResponseText());
+                                    JSONArray jsonArray = object.getJSONArray("results");
+                                    for (int i = 0; i < jsonArray.length(); i++) {
+                                        System.out.println("Test " + jsonArray.getJSONObject(i));
+                                        JSONObject jsonObject = jsonArray.getJSONObject(i);
+                                        InsuranceCarriers insuranceCarriers = new InsuranceCarriers();
+                                        insuranceCarriers.setId(jsonObject.getInt("id"));
+                                        insuranceCarriers.setName(jsonObject.getString("name"));
+                                        insuranceCarriersesList.add(insuranceCarriers);
+                                    }
+                                    insuranceCarriersAdapter = new InsuranceCarriersAdapter(getActivity(), insuranceCarriersesList);
+                                    mInsuranceCarrierSpinner.setAdapter(insuranceCarriersAdapter);
+                                } catch (JSONException e) {
+                                    e.printStackTrace();
+                                }
+                        }
+                }
+            }
+        });
+        getStateRequest.open("GET", String.format("%spublic/insurance-carriers/", AppGlobals.BASE_URL));
+        getStateRequest.send();
+    }
+
+    private void getStates() {
+        HttpRequest getStateRequest = new HttpRequest(getActivity().getApplicationContext());
+        getStateRequest.setOnReadyStateChangeListener(new HttpRequest.OnReadyStateChangeListener() {
+            @Override
+            public void onReadyStateChange(HttpRequest request, int readyState) {
+                switch (readyState) {
+                    case HttpRequest.STATE_DONE:
+                        switch (request.getStatus()) {
+                            case HttpURLConnection.HTTP_OK:
+                                try {
+                                    JSONObject object = new JSONObject(request.getResponseText());
+                                    JSONArray jsonArray = object.getJSONArray("results");
+                                    for (int i = 0; i < jsonArray.length(); i++) {
+                                        System.out.println("Test " + jsonArray.getJSONObject(i));
+                                        JSONObject jsonObject = jsonArray.getJSONObject(i);
+                                        States states = new States();
+                                        states.setCode(jsonObject.getString("code"));
+                                        states.setId(jsonObject.getInt("id"));
+                                        states.setName(jsonObject.getString("name"));
+                                        statesList.add(states);
+                                    }
+                                    statesAdapter = new StatesAdapter(getActivity(), statesList);
+                                    mStateSpinner.setAdapter(statesAdapter);
+                                } catch (JSONException e) {
+                                    e.printStackTrace();
+                                }
+                        }
+                }
+            }
+        });
+        getStateRequest.open("GET", String.format("%spublic/states", AppGlobals.BASE_URL));
+        getStateRequest.send();
+    }
+
+    private void getCities(int id) {
+        HttpRequest getCitiesRequest = new HttpRequest(getActivity().getApplicationContext());
+        getCitiesRequest.setOnReadyStateChangeListener(new HttpRequest.OnReadyStateChangeListener() {
+            @Override
+            public void onReadyStateChange(HttpRequest request, int readyState) {
+                switch (readyState) {
+                    case HttpRequest.STATE_DONE:
+                        switch (request.getStatus()) {
+                            case HttpURLConnection.HTTP_OK:
+                                System.out.println(request.getResponseText());
+                                try {
+                                    JSONObject object = new JSONObject(request.getResponseText());
+                                    JSONArray jsonArray = object.getJSONArray("results");
+                                    citiesList = new ArrayList<>();
+                                    for (int i = 0; i < jsonArray.length(); i++) {
+                                        System.out.println("Test " + jsonArray.getJSONObject(i));
+                                        JSONObject jsonObject = jsonArray.getJSONObject(i);
+                                        Cities cities = new Cities();
+                                        cities.setCityId(jsonObject.getInt("id"));
+                                        cities.setCityName(jsonObject.getString("name"));
+                                        cities.setStateId(jsonObject.getInt("state"));
+                                        cities.setStateName(jsonObject.getString("state_name"));
+                                        citiesList.add(cities);
+                                    }
+                                    citiesAdapter = new CitiesAdapter(getActivity(), citiesList);
+                                    mCitySpinner.setAdapter(citiesAdapter);
+                                } catch (JSONException e) {
+                                    e.printStackTrace();
+                                }
+                        }
+                }
+            }
+        });
+        getCitiesRequest.open("GET", String.format("%spublic/states/%s/cities", AppGlobals.BASE_URL, id));
+        getCitiesRequest.send();
     }
 
     @Override
@@ -172,23 +250,21 @@ public class UserBasicInfoStepTwo extends Fragment implements AdapterView.OnItem
     public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
         switch (adapterView.getId()) {
             case R.id.states_spinner:
-                mStatesSpinnerValueString = adapterView.getItemAtPosition(i).toString();
-                System.out.println(mStatesSpinnerValueString);
+                States states = statesList.get(i);
+                getCities(states.getId());
+                mStatesSpinnerValueString = String.valueOf(states.getId());
+                System.out.println(states.getId());
                 break;
             case R.id.cities_spinner:
-                mCitiesSpinnerValueString = adapterView.getItemAtPosition(i).toString();
-                System.out.println(mCitiesSpinnerValueString);
+                Cities city = citiesList.get(i);
+                mCitiesSpinnerValueString = String.valueOf(city.getCityId());
+                System.out.println(city.getCityId());
                 break;
             case R.id.insurance_spinner:
-                mInsuranceCarrierSpinnerValueString = adapterView.getItemAtPosition(i).toString();
-                System.out.println(mInsuranceCarrierSpinnerValueString);
+                InsuranceCarriers insuranceCarriers = insuranceCarriersesList.get(i);
+                mInsuranceCarrierSpinnerValueString = String.valueOf(insuranceCarriers.getId());
                 break;
-//            case R.id.clinic_spinner:
-//                mAffiliatedClinicsSpinnerValueString = adapterView.getItemAtPosition(i).toString();
-//                System.out.println(mAffiliatedClinicsSpinnerValueString);
-//                break;
         }
-
     }
 
     @Override
@@ -282,9 +358,9 @@ public class UserBasicInfoStepTwo extends Fragment implements AdapterView.OnItem
         } else {
             Helpers.showProgressDialog(getActivity(), "Updating your Profile...");
         }
-        data.append(FormData.TYPE_CONTENT_TEXT, "state", mStatesSpinnerValueString);
-        data.append(FormData.TYPE_CONTENT_TEXT, "city", mCitiesSpinnerValueString);
-        data.append(FormData.TYPE_CONTENT_TEXT, "insurance_carrier", mInsuranceCarrierSpinnerValueString);
+        data.append(FormData.TYPE_CONTENT_TEXT, "state_id", mStatesSpinnerValueString);
+        data.append(FormData.TYPE_CONTENT_TEXT, "city_id", mCitiesSpinnerValueString);
+        data.append(FormData.TYPE_CONTENT_TEXT, "insurance_carrier_id", mInsuranceCarrierSpinnerValueString);
 //        data.append(FormData.TYPE_CONTENT_TEXT, "affiliate_clinic", mAffiliatedClinicsSpinnerValueString);
         data.append(FormData.TYPE_CONTENT_TEXT, "phone_number_primary", mPhoneOneEditTextString);
         data.append(FormData.TYPE_CONTENT_TEXT, "phone_number_secondary", mPhoneTwoEditTextString);
@@ -337,13 +413,13 @@ public class UserBasicInfoStepTwo extends Fragment implements AdapterView.OnItem
                             String firstName = jsonObject.getString(AppGlobals.KEY_FIRST_NAME);
                             String lastName = jsonObject.getString(AppGlobals.KEY_LAST_NAME);
                             String imageUrl = jsonObject.getString(AppGlobals.KEY_IMAGE_URL);
+                            String profileId = jsonObject.getString(AppGlobals.KEY_PROFILE_ID);
 
                             String gender = jsonObject.getString(AppGlobals.KEY_GENDER);
                             String dateOfBirth = jsonObject.getString(AppGlobals.KEY_DATE_OF_BIRTH);
                             String phoneNumberPrimary = jsonObject.getString(AppGlobals.KEY_PHONE_NUMBER_PRIMARY);
                             String phoneNumberSecondary = jsonObject.getString(AppGlobals.KEY_PHONE_NUMBER_SECONDARY);
 
-//                            String affiliateClinic = jsonObject.getString(AppGlobals.KEY_AFFILIATE_CLINIC);
                             String insuranceCarrier = jsonObject.getString(AppGlobals.KEY_INSURANCE_CARRIER);
                             String address = jsonObject.getString(AppGlobals.KEY_ADDRESS);
                             String location = jsonObject.getString(AppGlobals.KEY_LOCATION);
@@ -367,11 +443,11 @@ public class UserBasicInfoStepTwo extends Fragment implements AdapterView.OnItem
                             AppGlobals.saveDataToSharedPreferences(AppGlobals.KEY_PHONE_NUMBER_PRIMARY, phoneNumberPrimary);
                             AppGlobals.saveDataToSharedPreferences(AppGlobals.KEY_PHONE_NUMBER_SECONDARY, phoneNumberSecondary);
 
-//                            AppGlobals.saveDataToSharedPreferences(AppGlobals.KEY_AFFILIATE_CLINIC, affiliateClinic);
+//                            AppGlobals.saveDataToSharedPreferences(AppGlobals.KEY_AFFILIATE_CLINIC_ID, affiliateClinic);
                             AppGlobals.saveDataToSharedPreferences(AppGlobals.KEY_INSURANCE_CARRIER, insuranceCarrier);
                             AppGlobals.saveDataToSharedPreferences(AppGlobals.KEY_ADDRESS, address);
                             AppGlobals.saveDataToSharedPreferences(AppGlobals.KEY_LOCATION, location);
-
+                            AppGlobals.saveDataToSharedPreferences(AppGlobals.KEY_PROFILE_ID, profileId);
                             AppGlobals.saveDataToSharedPreferences(AppGlobals.KEY_CHAT_STATUS, chatStatus);
                             AppGlobals.saveDataToSharedPreferences(AppGlobals.KEY_STATE, state);
                             AppGlobals.saveDataToSharedPreferences(AppGlobals.KEY_CITY, city);

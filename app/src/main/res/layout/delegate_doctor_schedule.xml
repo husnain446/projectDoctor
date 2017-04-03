@@ -47,7 +47,7 @@
             android:layout_alignParentEnd="true"
             android:layout_marginEnd="27dp"
             android:button="@drawable/circular_checkbox"
-            android:checked="true" />
+            />
 
     </RelativeLayout>
 

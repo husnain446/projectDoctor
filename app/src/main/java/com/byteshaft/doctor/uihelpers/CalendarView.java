@@ -25,8 +25,6 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.HashSet;
 
-import static android.content.ContentValues.TAG;
-
 /**
  * Created by a7med on 28/06/2015.
  */
@@ -229,7 +227,7 @@ public class CalendarView extends LinearLayout {
                         String.valueOf(array[0]), 100, 100);
                 ((ImageView) view).setImageBitmap(letterTile);
             }
-            Log.i(TAG, "Called");
+//            Log.i(TAG, "Called");
 
             return view;
         }

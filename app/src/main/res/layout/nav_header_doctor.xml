@@ -74,7 +74,7 @@
             android:checked="true"
             android:layout_height="wrap_content"
             android:textColor="@android:color/white"
-            android:text="on-line"
+            android:text="@string/online"
             android:textSize="12sp"
             app:theme="@style/switchTheme"/>
 
